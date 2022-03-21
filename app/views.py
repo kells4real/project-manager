@@ -8,6 +8,8 @@ from .serializers import FileSerializer
 from .models import Project
 from django.conf import settings
 import os
+from rest_framework import status
+
 
 @api_view(['GET'])
 def home(request):
@@ -21,7 +23,7 @@ def postFile(request):
     if serializer.is_valid():
         savedFile = serializer.save()
         path = savedFile.file.path
-        folder = f"{settings.MEDIA_ROOT}\\user_files\\{savedFile.slug}"
+        folder = f"{settings.MEDIA_ROOT}/user_files/{savedFile.slug}"
 
         with zipfile.ZipFile(path, "r") as zip_ref:
             zip_ref.extractall(folder)
@@ -44,6 +46,8 @@ def postFile(request):
         shutil.rmtree(folder)
 
         return Response({"codeLines": len(lines)})
+    else:
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
 
 @api_view(['GET'])
@@ -51,7 +55,7 @@ def testApi(request):
     project = Project.objects.get(slug="forth")
 
     path = project.file.path
-    folder = f"{settings.MEDIA_ROOT}\\user_files\\{project.slug}"
+    folder = f"{settings.MEDIA_ROOT}/user_files/{project.slug}"
 
     with zipfile.ZipFile(path, "r") as zip_ref:
         zip_ref.extractall(folder)

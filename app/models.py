@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from django.core.validators import FileExtensionValidator
 
 
 def project_file_upload(instance, filename):
@@ -10,7 +11,8 @@ def project_file_upload(instance, filename):
 
 class Project(models.Model):
     projectName = models.CharField(max_length=100)
-    file = models.FileField(upload_to=project_file_upload)
+    file = models.FileField(upload_to=project_file_upload,
+                            validators=[FileExtensionValidator(allowed_extensions=['zip', '7zip'])])
     slug = models.SlugField(null=True, unique=True)
     fileExt = models.CharField(null=True, max_length=100)
 

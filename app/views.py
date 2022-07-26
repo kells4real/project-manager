@@ -9,6 +9,7 @@ from .models import Project
 from django.conf import settings
 import os
 
+
 @api_view(['GET'])
 def home(request):
     return Response({"Message": "Welcome Home"})
@@ -20,27 +21,36 @@ def postFile(request):
 
     if serializer.is_valid():
         savedFile = serializer.save()
+        # Saved file path
         path = savedFile.file.path
+        # Exact folder of the saved file
         folder = f"{settings.MEDIA_ROOT}\\user_files\\{savedFile.slug}"
 
+        # Unzip into the file (zipped)
         with zipfile.ZipFile(path, "r") as zip_ref:
-            zip_ref.extractall(folder)
+            zip_ref.extractall(folder)  # Extracts the zip file
         lines = []
         extLines = []
-        summary = []
         newList = []
+        # Gets the file extensions from the frontend as just a text, splits them and them into a list
         EXT = savedFile.fileExt.split(",")
-        EXT.pop()
+        EXT.pop()  # Removes the last comma
+
+        # Creates a list of dictionaries to be updated on the fly depending on the extension
         for ext in EXT:
             newDict = {"name": str(ext), "lines": 0, "files": 0}
             newList.append(newDict)
-        for subdir, dirs, files in os.walk(folder):
-            for file in files:
-                # print os.path.join(subdir, file)
 
+        # Walk through the dirs and sub dirs
+        for subdir, dirs, files in os.walk(folder):
+            # For every file,
+            for file in files:
+                # store file in filepath variable
                 filepath = subdir + os.sep + file
 
+                # Loops through the extensions saved in EXT
                 for ext in EXT:
+                    # Self explanatory
                     if filepath.endswith(ext):
                         for i in newList:
                             if i['name'] == str(ext):
@@ -55,9 +65,7 @@ def postFile(request):
                     for i in newList:
                         if i['name'] == str(ext):
                             i["lines"] += len(extLines)
-                            # i["files"] += 1
                     extLines = []
-        # print(f"There is {len(lines)} lines of code in this project.")
         savedFile.delete()
         shutil.rmtree(folder)
 
@@ -90,5 +98,3 @@ def testApi(request):
     # print(f"There is {len(lines)} lines of code in this project.")
 
     return Response({"codeLines": len(lines)})
-
-

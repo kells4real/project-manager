@@ -66,15 +66,17 @@ def postFile(request):
                         if i['name'] == str(ext):
                             i["lines"] += len(extLines)
                     extLines = []
-        savedFile.delete()
         shutil.rmtree(folder)
+        savedFile.delete()
 
         return Response({"codeLines": len(lines), "summary": newList})
+    else:
+        return Response(serializer.errors)
 
 
 @api_view(['GET'])
 def testApi(request):
-    project = Project.objects.get(slug="forth")
+    project = Project.objects.get(slug="first")
 
     path = project.file.path
     folder = f"{settings.MEDIA_ROOT}\\user_files\\{project.slug}"
